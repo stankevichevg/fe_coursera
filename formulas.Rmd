@@ -1,0 +1,121 @@
+---
+title: "Financial Engeniring Formulas"
+author: "Evgeny Stankevich"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+The list of usefull formulas learned from coursera course ["Financial Engeniring and Risk Management"](https://www.coursera.org/learn/financial-engineering-1).
+
+## Interest rate.
+
+### Investment worth at maturity.
+
+Simple interest rate:
+
+$$ \large{ A\left( 1 + n * r \right) } $$
+
+Compound interest rate:
+
+$$ \large{ A\left( 1 + r \right) ^ n } $$
+
+Continous compounding:
+
+$$ \large{ \lim_{x\to\infty} A\left( 1 + \frac {r} {n} \right) ^ {y * n} = Ae^{r * y} } $$
+
+### Present value of cashflow.
+
+Given cacheflow $c = (c_1, c_2, ..., c_N)$ and constant interest rate, the present value $PV(c,r)$ is:
+
+$$ \large{ \sum_{k=0}^{N} {\frac {c_k} {(1 + r)^k}} }$$
+
+Perpetuity: $c_k = A$ for $k \geq 0$:
+
+$$ \large{ \sum_{k=0}^{\infty} {\frac {A} {(1 + r)^k}} = \frac {A} {r}}$$
+
+Annuity: $c_k = A$ for $k = 1,2,...n$:
+
+(Annuity = Perpetuity ??? Perpetuity starting in year n + 1)
+
+$$ \large{ APV = \frac {A} {r} - \frac {1} {(1 + r)^n} * \frac {A} {r} = \frac {A} {r} * (1 - \frac {1} {(1 + r)^n})}$$
+
+### Term structure of interest rate.
+
+$s_t$ - interest rate for loan maturing in $t$ years.
+
+Discount rate $d(0,t) = \frac {1} {(1 + s_t)^t}$. Forward rate $f_{uv}$ is interest rate quoted today for lending from year $u$ to $v$. 
+
+$$ \large{ (1 + s_v)^v = (1 + s_u)^u*(1 + f_{uv})^{v - u} } \Rightarrow f_{uv} = \left(\frac {(1 + s_v)^v} {(1 + s_u)^u}\right)^{\frac {1} {v - u}} - 1 $$
+
+$$ \large{ (1 + s_t)^t = \prod_{k=0}^{t-1} (1 + f_{k,k+1}) }$$
+
+## Futures.
+
+### Hedging using futures when futures cintract on the underluing is not available (minimum variance hedging).
+
+Say company need product A on time T, but no A futures available. But futures available for similar product B (having high correlated price). How many futures had to be bought to hedge risk?
+
+Cache flow in T:
+
+- Futures position: $(F_T - F_0)y$
+- Buy A in the spot: $P_T$
+- Effecive cache flow: $y*(F_T - F_0) + P_T$
+
+$$ var(C_T) = var(P_T) + var(y*(F_T ??? F_0)) + 2*cov(P_T, y(F_T ??? F_0)) $$
+
+$$ var(C_T) = var(P_T) + y^2*var(F_T) + 2y*cov(P_T, F_T) $$
+
+To minimize set derivative respect to $y$ to zero:
+
+$$ \frac {\partial var(C_T(y))} {\partial y} = 2y*var(F_T) + 2*cov(F_T, P_T) = 0 $$
+
+$$ \large{ y^* = - \frac {cov(F_T, P_T)} {var(F_T)} } $$
+
+## Options.
+
+### PUT/CALL Parity of European option.
+
+Trading strategy:
+
+- At time $t$ buy European call with strike $K$ and expiration $T$
+- At time $t$ sell European put with strike $K$ and expiration $T$
+- At time $t$ (short) 1 unit of underlying and buy at time $T$
+- Lend $K*d(t,T)$ dollars yp to time $T$
+
+No arbitrage principle says:
+
+At time $t$:
+$$ \large{ -c_E(t,K,T) + p_E(t,K,T) + S_t - K*d(t,T) = 0 } $$
+
+At time $T$:
+$$ \large{ \max\{S_T - K, 0\} - \max\{K - S_T, 0\} -S_t + K = 0 } $$
+
+### Option bounds prices.
+
+American options give more freedom, so:
+$$ \large{ c_A(t,K,T) \geq c_E(t,K,T); p_A(t,K,T) \geq p_E(t,K,T) }$$
+
+Lower bound of the European option prices:
+
+$$ \large{ c_E(t,K,T) = \max\{S_t + p_E(t,K,T) - K*d(t,T), 0\} \geq \max\{S_t + K*d(t,T), 0\} }$$
+
+$$ \large{ p_E(t,K,T) = \max\{K*d(t,T) + c_E(t,K,T) - S_t, 0\} \geq \max\{K*d(t,T) - S_t, 0\} }$$
+
+### Option Pricing and the Binomial Model (one period)
+
+Let at the moment $t=0$ price of an asset is $S_0$. At time $t=1$ with probability $p$ the price may goes up to $u * S_0$ or goes down to $d * S_0$. Define $C_u$ and $C_d$ as intristic value of contract assuming strike $K$.
+
+Set up replicating portfolio: Consider buying $x$ shares and investing $y$ in cash at t = 0. The cost ot such portfolio is: 
+
+$$ C_0 = xS_0 + y $$
+
+In the other hand at time $t$ this portfolio worth $uS_0x + Ry$ if $S_1 = uS_0$ or $dS_0x + Ry$ if $S_1 = dS_0$. So we take the following system:
+
+$$\begin{cases} uS_0x + Ry = C_u \\ dS_0x + Ry = C_d \end{cases}$$
+
+Solving this system we have risk-neutral pricing rule:
+
+$$ \large{ \begin{array} {lcl} C_0 & = & \frac {1} {R} \left[ \frac {R - d} {u - d} C_u + \frac {u - R} {u - d} C_d \right]  \\ & = & \frac {1} {R} \left[ qC_u + (1 - q) C_d \right] \\ & = & \frac {1} {R} E_0^Q \left[ C_1 \right] \end{array} } $$
